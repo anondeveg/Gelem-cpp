@@ -142,5 +142,3 @@ int main() {
   gauss(UniqueSolProblem);
 }
 
-// n pivot / underpivot
-// n * -1
