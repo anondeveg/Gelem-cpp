@@ -1,61 +1,19 @@
 #include "matrix.h"
-#include <stdexcept>
 #include <tuple>
 
 using namespace std;
 
-vec addRow(vec r1, vec r2) {
-  if (r1.size() != r2.size()) {
-    throw invalid_argument("NOT EQUAL ROWS");
-  }
-  vec Result;
-  for (unsigned int i = 0; i < r1.size(); i++) {
-    Result.push_back(r1[i] + r2[i]);
-  }
 
-  return Result;
-}
+Matrix zeroing(Matrix M, int pivotRowNumber, int pivotColNumber, int workingrowDistance) {
 
-vec subtRow(vec r1, vec r2) {
-  if (r1.size() != r2.size()) {
-    throw invalid_argument("NOT EQUAL ROWS");
-  }
-  vec Result;
-  for (unsigned int i = 0; i < r1.size(); i++) {
+    if (pivotRowNumber + workingrowDistance >= M.rowsize) {
 
-    Result.push_back(r1[i] - r2[i]);
-  }
-  return Result;
-}
+        return M;
+    }
+    
+    double workingN = M.matrix[pivotRowNumber + workingrowDistance][pivotColNumber];
+    double PIVOT = M.matrix[pivotRowNumber][pivotColNumber];
 
-vec rowConstantMul(vec r1, double constant) {
-  vec Result{};
-  for (unsigned int i = 0; i < r1.size(); i++) {
-    Result.push_back(r1[i] * constant);
-  }
-
-  return Result;
-}
-
-vec RowByRowMul(vec r1, vec r2) {
-  vec Result{};
-  for (unsigned int i = 0; i < r1.size(); i++) {
-    Result.push_back(r1[i] * r2[i]);
-  }
-
-  return Result;
-}
-
-
-
-Matrix zeroing(Matrix M, int pivotRowNumber, int pivotColNumber,
-               int workingrowDistance) {
-
-  if (pivotRowNumber + workingrowDistance >= M.rowsize)
-    return M;
-  double workingN =
-      M.matrix[pivotRowNumber + workingrowDistance][pivotColNumber];
-  double PIVOT = M.matrix[pivotRowNumber][pivotColNumber];
 	if(PIVOT == 0){
 		// swap rows 
 		vec temp = M.matrix[pivotRowNumber+1];
@@ -63,25 +21,19 @@ Matrix zeroing(Matrix M, int pivotRowNumber, int pivotColNumber,
 		M.matrix[pivotRowNumber] = temp;
 		zeroing(M,pivotRowNumber,pivotColNumber,workingrowDistance);
 	}
-  if (workingN != 0) {
-    vec pivotRow = M.getRow(pivotRowNumber);
-    vec workingRow = M.getRow(pivotRowNumber + workingrowDistance);
-    vec tempPivot = rowConstantMul(pivotRow, ((workingN * -1) / PIVOT));
-    vec result = addRow(tempPivot, workingRow);
+    if (workingN != 0) {
 
-    M.matrix[pivotRowNumber + workingrowDistance] = result;
-  }
+      vec pivotRow = M.getRow(pivotRowNumber);
+      vec workingRow = M.getRow(pivotRowNumber + workingrowDistance);
+      vec tempPivot = Matrix::rowConstantMul(pivotRow, ((workingN * -1) / PIVOT));
+      vec result = Matrix::addRow(tempPivot, workingRow);
+  
+      M.matrix[pivotRowNumber + workingrowDistance] = result;
+    }
 
-  return zeroing(M, pivotRowNumber, pivotColNumber, workingrowDistance + 1);
+    return zeroing(M, pivotRowNumber, pivotColNumber, workingrowDistance + 1);
 }
 
-bool isZeroRow(vec row) { // [1 2 3 | 4]
-  for (double x : row) {
-    if (x != 0)
-      return 0;
-  }
-  return 1;
-}
 
 double gauss(Matrix M) {
   Matrix tempM = Matrix(M.matrix, M.Dimension);
@@ -111,10 +63,10 @@ double gauss(Matrix M) {
   vec temp = M.getRow(M.rowsize - 1);
   temp.pop_back();
 
-  if (isZeroRow(M.getRow(M.rowsize - 1))) {
+  if (Matrix::isZeroRow(M.getRow(M.rowsize - 1))) {
     std::cout << "THIS SYSTEM HAS INFENITLY MANY SOLUTIONS";
     std::cout << '\n';
-  } else if (isZeroRow(temp) && (M.getRow(M.rowsize - 1).back() != 0)) {
+  } else if (Matrix::isZeroRow(temp) && (M.getRow(M.rowsize - 1).back() != 0)) {
     std::cout << "THIS SYSTEM HAS NO SOLUTIONS";
     std::cout << '\n';
 

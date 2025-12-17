@@ -6,10 +6,13 @@
 #include <tuple>
 #include <vector>
 
+
 using Dim = std::tuple<int, int>;
 using Mat = std::vector<std::vector<double>>;
 using vec = std::vector<double>;
 
+
+// Prints Vectors and other containers.
 template <typename T> void printContainer(const std::vector<T>& vec) {
     std::cout << "--------------\n";
     for (T item : vec) {
@@ -17,6 +20,8 @@ template <typename T> void printContainer(const std::vector<T>& vec) {
     }
     std::cout << "--------------\n";
 }
+
+
 
 class Matrix {
 
@@ -26,6 +31,8 @@ public:
     double rowsize = 0;
     double columnsize = 0;
 
+
+    //Constructor
     Matrix(Mat mat, Dim Dimension) {
         this->matrix = mat;
         this->Dimension = Dimension;
@@ -42,6 +49,8 @@ public:
         }
     }
 
+
+    // A Function that multiplies to matrices by each other.
     static Matrix dot(Matrix m1, Matrix m2) {
         if (m1.columnsize != m2.rowsize) { // m1.col != m2.rowj
             throw std::invalid_argument(
@@ -69,7 +78,11 @@ public:
         return matrixProduct;
     }
 
+
+    // Returns the row of a matrix
     vec getRow(int n) { return this->matrix[n]; }
+
+    //Returns the column of a matrix
     vec getCol(int n) {
         vec res;
         for (int i = 0; i < rowsize; i++) {
@@ -78,6 +91,8 @@ public:
         return res;
     }
 
+
+    // Function that prints a matrix
     void print() {
         for (int i = 0; i < rowsize; i++) {
 
@@ -90,7 +105,10 @@ public:
             std::cout << ")";
         }
     }
-    static Matrix Constmultiplication(Matrix TargetedMat, int k) {
+
+
+    // A Function that multiplies a matrix by a constant
+    static Matrix Constmultiplication(Matrix TargetedMat, double k) {
          
         Matrix Result({}, std::make_tuple(TargetedMat.rowsize, TargetedMat.columnsize));
 
@@ -108,18 +126,17 @@ public:
     }
 
 
+    // A Function that Adds 2 matrices together
     static Matrix AddMatrix(Matrix Mat1, Matrix Mat2) {
 
         if (Mat1.Dimension != Mat2.Dimension) {
-            /*throw std::invalid_argument(
-                "INVALID OPERATION UNEQUAL DIMENSIONS!");*/           // Dont know why doesn't it work
-
-            std::cout << "INVALID OPERATION UNEQUAL DIMENSIONS!";
+            throw std::invalid_argument(
+                "INVALID OPERATION UNEQUAL DIMENSIONS! Matrix addition operation "
+                "should have = dimensions");
         }
 
         else {
             Matrix Result({}, std::make_tuple(Mat1.rowsize, Mat1.columnsize));
-
 
             for (int i = 0; i < Mat1.rowsize; i++) {
 
@@ -133,16 +150,20 @@ public:
         }
     }
 
+
+
+    // A Function that subtracts 2 matrices
     static Matrix SubtractMatix(Matrix Mat1, Matrix Mat2) {
 
         if (Mat1.Dimension != Mat2.Dimension) {
+            throw std::invalid_argument(
+                "INVALID OPERATION UNEQUAL DIMENSIONS! Matrix addition operation "
+                "should have = dimensions");
 
-            std::cout << "INVALID OPERATION UNEQUAL DIMENSIONS!";
         }
 
         else {
             Matrix Result({}, std::make_tuple(Mat1.rowsize, Mat1.columnsize));
-
 
             for (int i = 0; i < Mat1.rowsize; i++) {
 
@@ -154,6 +175,65 @@ public:
 
             return Result;
         }
+    }
 
+
+    // A Function that adds 2 rows in a matrix
+    static vec addRow(vec r1, vec r2) {
+        if (r1.size() != r2.size()) {
+            throw std::invalid_argument("NOT EQUAL ROWS");
+        }
+        vec Result;
+        for (unsigned int i = 0; i < r1.size(); i++) {
+            Result.push_back(r1[i] + r2[i]);
+        }
+
+        return Result;
+    }
+
+
+    // A Function that subtracts 2 rows in a matrix
+    static vec subtRow(vec r1, vec r2) {
+        if (r1.size() != r2.size()) {
+            throw std::invalid_argument("NOT EQUAL ROWS");
+        }
+        vec Result;
+        for (unsigned int i = 0; i < r1.size(); i++) {
+
+            Result.push_back(r1[i] - r2[i]);
+        }
+        return Result;
+    }
+
+
+    // A Function that multiplies a row by a constant in a matrix
+    static vec rowConstantMul(vec r1, double constant) {
+        vec Result{};
+        for (unsigned int i = 0; i < r1.size(); i++) {
+            Result.push_back(r1[i] * constant);
+        }
+
+        return Result;
+    }
+
+
+    // A Function that multiplies 2 rows by each other in a matrix
+    static vec RowByRowMul(vec r1, vec r2) {
+        vec Result{};
+        for (unsigned int i = 0; i < r1.size(); i++) {
+            Result.push_back(r1[i] * r2[i]);
+        }
+
+        return Result;
+    }
+
+
+    // A Function to check if an entire row in a matrix is zeros
+    static bool isZeroRow(vec row) { // [1 2 3 | 4]
+        for (double x : row) {
+            if (x != 0)
+                return 0;
+        }
+        return 1;
     }
 };
