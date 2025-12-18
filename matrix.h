@@ -28,8 +28,8 @@ class Matrix {
 public:
     Dim Dimension;
     Mat matrix;
-    double rowsize = 0;
-    double columnsize = 0;
+    int rowsize = 0;
+    int columnsize = 0;
 
 
     //Constructor
@@ -109,7 +109,7 @@ public:
 
     // A Function that multiplies a matrix by a constant
     static Matrix Constmultiplication(Matrix TargetedMat, double k) {
-         
+
         Matrix Result({}, std::make_tuple(TargetedMat.rowsize, TargetedMat.columnsize));
 
 
@@ -235,5 +235,48 @@ public:
                 return 0;
         }
         return 1;
+    }
+
+
+    static bool isZeroCol(vec Col) {
+
+        bool IsZero = true;
+
+        for (int i = 0; i < Col.size(); i++) {
+            if (Col[i] != 0) {
+
+                return IsZero = false;
+            }
+
+        }
+        return IsZero;
+    }
+
+    /*static bool ColContainZero(vec Col) {
+
+        bool ContainZero = true;
+        auto it = std::find(Col.begin(), Col.end(), 0);
+
+        if (it == Col.end()) {
+
+            ContainZero = false;
+        }
+        return ContainZero;
+    }*/
+
+    static bool isZeroMatrix(Matrix M) {
+
+        bool IsZero = false;
+
+        for (int i = 0; i < M.rowsize; i++) {
+
+            vec MatrixCol = M.getCol(i);
+
+            if (isZeroCol(MatrixCol) == true) {
+                IsZero = true;
+
+            }
+        }
+        return IsZero;
     }
 };

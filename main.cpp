@@ -1,132 +1,111 @@
 #include "matrix.h"
-#include <tuple>
-
-using namespace std;
 
 
-Matrix zeroing(Matrix M, int pivotRowNumber, int pivotColNumber, int workingrowDistance) {
+static int FirstNonZeroInCol(vec Col, int PivotPos) {
 
-    if (pivotRowNumber + workingrowDistance >= M.rowsize) {
 
-        return M;
-    }
-    
-    double workingN = M.matrix[pivotRowNumber + workingrowDistance][pivotColNumber];
-    double PIVOT = M.matrix[pivotRowNumber][pivotColNumber];
+	auto it = std::find_if(Col.begin() + PivotPos, Col.end(), [](int i) { return i != 0; });
+	int index = std::distance(Col.begin(), it);
 
-	if(PIVOT == 0){
-		// swap rows 
-		vec temp = M.matrix[pivotRowNumber+1];
-		M.matrix[pivotRowNumber + 1] = M.matrix[pivotRowNumber];
-		M.matrix[pivotRowNumber] = temp;
-		zeroing(M,pivotRowNumber,pivotColNumber,workingrowDistance);
-	}
-    if (workingN != 0) {
-
-      vec pivotRow = M.getRow(pivotRowNumber);
-      vec workingRow = M.getRow(pivotRowNumber + workingrowDistance);
-      vec tempPivot = Matrix::rowConstantMul(pivotRow, ((workingN * -1) / PIVOT));
-      vec result = Matrix::addRow(tempPivot, workingRow);
-  
-      M.matrix[pivotRowNumber + workingrowDistance] = result;
-    }
-
-    return zeroing(M, pivotRowNumber, pivotColNumber, workingrowDistance + 1);
+	return index;
 }
 
 
-double gauss(Matrix M) {
-  Matrix tempM = Matrix(M.matrix, M.Dimension);
-	int pivotRowNumber = 0;
-	int pivotColNumber = 0;
-	double PIVOT = M.matrix[pivotRowNumber][pivotColNumber];
-	if(PIVOT == 0){
-		// swap rows 
-		vec temp = M.matrix[pivotRowNumber+1];
-		M.matrix[pivotRowNumber + 1] = M.matrix[pivotRowNumber];
-		M.matrix[pivotRowNumber] = temp;
-		return gauss(M);
+
+
+static Matrix RowEchlon(Matrix ArgumentMatrix) {
+
+	int MatrixColumnSize = ArgumentMatrix.columnsize;
+	static int MatrixRowSize = ArgumentMatrix.rowsize - 1;
+
+	static int PivotRowNum = 0;
+	static int PivotColumnNum = 0;
+	double Pivot = ArgumentMatrix.matrix[PivotRowNum][PivotColumnNum];
+
+
+
+	vec PivotRow = ArgumentMatrix.getRow(PivotRowNum);
+	vec PivotColumn = ArgumentMatrix.getCol(PivotColumnNum);
+
+	auto it = std::find_if(PivotColumn.begin(), PivotColumn.end(), [Pivot](double i) { return i == Pivot; });
+	static int PivotPos = std::distance(PivotColumn.begin(), it);
+	int PivotColEnd = std::distance(it, PivotColumn.end());
+
+
+	if (Matrix::isZeroCol(PivotColumn)) {
+		// Go RIGHT
+		if (PivotColumnNum < MatrixColumnSize - 2) {
+
+			PivotColumnNum += 1;
+			PivotPos += 1;
+			RowEchlon(ArgumentMatrix);
+		}
+		else {
+			std::cout << "This System has no solutions!";
+		}
+
 	}
- 
-  for (int i = 0; i <= M.rowsize; i++) {
-    tempM = zeroing(M, i /*PIVOT ROW NUMBER*/, i,
-                    /*PIVOT COLUMN NUMBER*/ 1); // first pivot done
-    while (M.matrix != tempM.matrix) { // would only equal each other if we
-                                       // finished that specific Pivot
-      M = tempM;
-      tempM = zeroing(M, i, i, 1); // first pivot done
-    }
-  }
+	else {
 
-  M.print();
-  std::cout << '\n';
-  vec temp = M.getRow(M.rowsize - 1);
-  temp.pop_back();
 
-  if (Matrix::isZeroRow(M.getRow(M.rowsize - 1))) {
-    std::cout << "THIS SYSTEM HAS INFENITLY MANY SOLUTIONS";
-    std::cout << '\n';
-  } else if (Matrix::isZeroRow(temp) && (M.getRow(M.rowsize - 1).back() != 0)) {
-    std::cout << "THIS SYSTEM HAS NO SOLUTIONS";
-    std::cout << '\n';
+		if (Pivot == 0) {
 
-  } else {
-    // this has unique SOLUTIONS
-    vec lastRow = M.getRow(M.rowsize - 1);      // last euation
-    double resR3 = lastRow[lastRow.size() - 1]; // result is last element;
-    double zR3 = lastRow[lastRow.size() - 2];   // Z value in the last equation;
-    double Z = resR3 / zR3;
-    std::cout << "\nZ:" << Z;
-    vec YRow = M.getRow(M.rowsize - 2);
-    double ZR2 = YRow[YRow.size() - 2] * Z;
+			int RowUnderPivotIndex = FirstNonZeroInCol(ArgumentMatrix.getCol(PivotColumnNum), PivotPos);
+			vec temp = ArgumentMatrix.matrix[RowUnderPivotIndex];
+			ArgumentMatrix.matrix[RowUnderPivotIndex] = ArgumentMatrix.matrix[PivotPos];
+			ArgumentMatrix.matrix[PivotPos] = temp;
 
-    double resR2 = YRow[YRow.size() - 1];
-    double Y;
-    double X;
-    if (ZR2 > 0) {
-      Y = (resR2 - ZR2) / YRow[YRow.size() - 3];
-      std::cout << "\nY:" << Y << "\n";
-    } else {
-      Y = (resR2 + ZR2) / YRow[YRow.size() - 3];
-      std::cout << "\nY:" << Y << "\n";
-    }
+			ArgumentMatrix.print(); std::cout << '\n';
 
-    vec XRow = M.getRow(M.rowsize - 3);
-    double ZR1 = XRow[XRow.size() - 2] * Z;
-    double YR1 = XRow[XRow.size() - 3] * Y;
-    double YZ = ZR1 + YR1;
-    double resR1 = XRow[XRow.size() - 1];
+			RowEchlon(ArgumentMatrix);
 
-    if (YZ > 0) {
-      X = (resR1 - YZ) / XRow[XRow.size() - 4];
-      std::cout << "X:" << X << "\n";
+		}
+		else {
 
-    } else {
-      X = (resR1 + YZ) / XRow[XRow.size() - 4];
-      std::cout << "X:" << X << "\n";
-    }
-  }
+			if (MatrixRowSize != 0) {
 
-  return 0.0;
-};
+				vec RowUnderPivot = ArgumentMatrix.getRow(MatrixRowSize);
+				double Multipiler = RowUnderPivot[PivotPos] / Pivot;
+				vec SubtractorRow = Matrix::rowConstantMul(PivotRow, Multipiler);
+				vec FinalRow = Matrix::subtRow(RowUnderPivot, SubtractorRow);
+				ArgumentMatrix.matrix[MatrixRowSize] = FinalRow;
+				MatrixRowSize--;
+
+				ArgumentMatrix.print(); std::cout << '\n';
+
+				RowEchlon(ArgumentMatrix);
+			}
+
+		}
+	}
+
+	return ArgumentMatrix;
+
+}
 
 int main() {
-  Matrix InfManyproblem = Matrix({{1, 3, 1, 9},
-                                  {1, 1, -1, 1},
-                                  {3, 11, 5, 35},
-                                  {
-                                      1,
-                                      1,
-                                      -1,
-                                      1,
-                                  }},
-                                 std::make_tuple(3, 4));
-  Matrix NoSolProblem = Matrix({{1, 2, 3}, {2, 4, 7}}, std::make_tuple(2, 3));
-  Matrix UniqueSolProblem = Matrix({{1, 2, 3, 14}, {0, 1, 2, 8}, {0, 0, 1, 3}},
-                                   std::make_tuple(3, 4));
-  Matrix zeroPivotProblem= Matrix({{0,2,1,5},{1,-1,3,4},{2,1,1,6}}, std::make_tuple(3, 4));
-  //gauss(InfManyproblem);
-  //gauss(NoSolProblem);
-  //gauss(UniqueSolProblem);
-  gauss(zeroPivotProblem);
+
+	Matrix zeroPivotProblem = Matrix({ {0,2,1,5  },
+									   {0,-1,3,4 },
+									   {0,1,1,6  } }, std::make_tuple(3, 4));
+
+	Matrix zeroPivotProblem2 = Matrix({ {0,0,0,5  },
+									   {0,0,0,4 },
+									   {0,0,0,6  } }, std::make_tuple(3, 4));
+
+	Matrix NoSolProblem = Matrix({ {1, 2, 3},
+								   {2, 4, 7} }, std::make_tuple(2, 3));
+
+	Matrix NoSolProblem2 = Matrix({ {2, 5, 2, -38   },
+									{3, -2, 4, 17   },
+									{-6, 1, -7, -12 } }, std::make_tuple(3, 4));
+
+
+	Matrix m = RowEchlon(zeroPivotProblem2);
+	//Matrix m = RowEchlon(NoSolProblem);
+
+
+	//std::cout << Matrix::isZeroCol(zeroPivotProblem.getCol(0));
+
+
 }
