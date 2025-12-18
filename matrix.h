@@ -237,7 +237,7 @@ public:
         return 1;
     }
 
-
+    // A Function to check is an entire column is zeros 
     static bool isZeroCol(vec Col) {
 
         bool IsZero = true;
@@ -252,18 +252,7 @@ public:
         return IsZero;
     }
 
-    /*static bool ColContainZero(vec Col) {
-
-        bool ContainZero = true;
-        auto it = std::find(Col.begin(), Col.end(), 0);
-
-        if (it == Col.end()) {
-
-            ContainZero = false;
-        }
-        return ContainZero;
-    }*/
-
+    // A Function that checkes if an entire matrix is made of zeros
     static bool isZeroMatrix(Matrix M) {
 
         bool IsZero = false;
