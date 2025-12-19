@@ -1,5 +1,5 @@
 #include "matrix.h"
-#include <chrono>
+
 
 static int FirstNonZeroInCol(vec Col, int PivotPos) {
 
@@ -9,89 +9,83 @@ static int FirstNonZeroInCol(vec Col, int PivotPos) {
 	return index;
 }
 
+int PivotRowNum = 0;
+int PivotColumnNum = 0;
+
 static Matrix Gauss(Matrix ArgumentMatrix) {
 
-	int MatrixColumnSize = ArgumentMatrix.columnsize;
+	int MatrixColumnSize = ArgumentMatrix.columnsize; // "Not Zero Indexed"
+	int MatrixRowSize = ArgumentMatrix.rowsize; // "Not Zero Indexed"
 
 
-	for (int i = 0; i < ArgumentMatrix.columnsize - 1; i++) {
-
-		int PivotRowNum = i;
-		int PivotColumnNum = i;
-		double Pivot = ArgumentMatrix.matrix[PivotRowNum][PivotColumnNum];
-		int MatrixRowSize = ArgumentMatrix.rowsize - 1;
-
-		vec PivotColumn = ArgumentMatrix.getCol(PivotColumnNum);
-		auto it = std::find_if(PivotColumn.begin(), PivotColumn.end(), [Pivot](double i) { return i == Pivot; });
-		int PivotPos = std::distance(PivotColumn.begin(), it);
+	double Pivot = ArgumentMatrix.matrix[PivotRowNum][PivotColumnNum];
 
 
+	vec PivotColumn = ArgumentMatrix.getCol(PivotColumnNum);
+	auto it = std::find_if(PivotColumn.begin(), PivotColumn.end(), [Pivot](double i) { return i == Pivot; }); // Returns an iterator of the pivot's position
+	int PivotPos = std::distance(PivotColumn.begin(), it); // return the pivots postion inside the column "Zero indexed"
+	vec PivotRow = ArgumentMatrix.getRow(PivotPos); // returns the row of the pivot
 
-		vec PivotRow = ArgumentMatrix.getRow(PivotPos);
 
-		// 2
-		for (int j = 0; j < ArgumentMatrix.rowsize - 1 - PivotPos; j++) {
+	if (PivotColumnNum != ArgumentMatrix.columnsize - 2) {
+		if (Matrix::isZeroCol(ArgumentMatrix.getCol(PivotColumnNum), PivotPos)) {
 
-			if (Matrix::isZeroCol(ArgumentMatrix.getCol(i))) {
-				// Go RIGHT
-				if (PivotColumnNum < MatrixColumnSize - 2) {
+			if (PivotColumnNum < MatrixColumnSize - 2) {
 
-					PivotColumnNum += 1;
-					PivotPos += 1;
+				PivotColumnNum += 1;
 
-				}
-				else {
-					std::cout << "This System has no solutions!";
-				}
+				return Gauss(ArgumentMatrix);
+			}
 
+		}
+		if (Pivot == 0 && Matrix::isZeroCol(ArgumentMatrix.getCol(PivotColumnNum), PivotPos) == false) {
+
+			int RowUnderPivotIndex = FirstNonZeroInCol(ArgumentMatrix.getCol(PivotColumnNum), PivotPos);
+			vec temp = ArgumentMatrix.matrix[RowUnderPivotIndex];
+			ArgumentMatrix.matrix[RowUnderPivotIndex] = ArgumentMatrix.matrix[PivotPos];
+			ArgumentMatrix.matrix[PivotPos] = temp;
+			ArgumentMatrix.print(); std::cout << '\n';
+			return Gauss(ArgumentMatrix);
+
+
+
+		}
+		else {
+
+			for (int i = 0; i < ArgumentMatrix.rowsize - 1 - PivotPos; i++) {
+
+				vec RowUnderPivot = ArgumentMatrix.getRow(MatrixRowSize - 1);
+				double Multipiler = RowUnderPivot[PivotColumnNum] / Pivot;
+				vec SubtractorRow = Matrix::rowConstantMul(PivotRow, Multipiler);
+				vec FinalRow = Matrix::subtRow(RowUnderPivot, SubtractorRow);
+				ArgumentMatrix.matrix[MatrixRowSize - 1] = FinalRow;
+				MatrixRowSize--;
+
+				ArgumentMatrix.print(); std::cout << '\n';
+			}
+
+			if (PivotColumnNum != ArgumentMatrix.columnsize - 2) {
+
+				PivotRowNum++;
+				PivotColumnNum++;
+				Gauss(ArgumentMatrix);
 			}
 			else {
-
-
-				if (Pivot == 0) {
-
-					int RowUnderPivotIndex = FirstNonZeroInCol(ArgumentMatrix.getCol(PivotColumnNum), PivotPos);
-					vec temp = ArgumentMatrix.matrix[RowUnderPivotIndex];
-					ArgumentMatrix.matrix[RowUnderPivotIndex] = ArgumentMatrix.matrix[PivotPos];
-					ArgumentMatrix.matrix[PivotPos] = temp;
-
-					return Gauss(ArgumentMatrix);
-
-
-
-				}
-				else {
-
-					if (MatrixRowSize != 0 && PivotRow != ArgumentMatrix.getRow(ArgumentMatrix.rowsize - 1)) {
-
-						vec RowUnderPivot = ArgumentMatrix.getRow(MatrixRowSize);
-						double Multipiler = RowUnderPivot[PivotPos] / Pivot;
-						vec SubtractorRow = Matrix::rowConstantMul(PivotRow, Multipiler);
-						vec FinalRow = Matrix::subtRow(RowUnderPivot, SubtractorRow);
-						ArgumentMatrix.matrix[MatrixRowSize] = FinalRow;
-						MatrixRowSize--;
-
-						//ArgumentMatrix.print(); std::cout << '\n';
-
-
-					}
-
-
-
-				}
-
-
-
+				return ArgumentMatrix;
 			}
+
 		}
-
-
 	}
-	return ArgumentMatrix;
+	else {
+		return ArgumentMatrix;
+	}
+	
+
+
+	
+
+
 }
-
-
-
 
 int main() {
 
@@ -114,6 +108,12 @@ int main() {
 		std::make_tuple(4, 5));
 
 	Matrix test = Matrix({ {2,5,2,-38},{3,-2,4,17},{-6,1,-7,-12} }, std::make_tuple(3, 4));
+
+	Matrix test2 = Matrix({ {1, 2, 3, 4},{2, 4, 5, 10},{3, 6, 7, 14} }, std::make_tuple(3, 4));
+
+	Matrix test3 = Matrix({ {0, 2, 3, 4},{0, 4, 5, 10},{0, 6, 7, 14} }, std::make_tuple(3, 4));
+	//Gauss(test3);
+
 	std::cout << "\n================================\n";
 
 	std::cout << "Test Case 1: Infinite Solutions\n";
@@ -147,7 +147,20 @@ int main() {
 	std::cout << "----------------------------\n";
 	Gauss(zeroPivotProblem).print();
 
+	std::cout << "\n\n================================\n";
+	std::cout << "Test Case 5: Moving Right\n";
+	std::cout << "================================\n";
+	test2.print();
+	std::cout << "\nAfter Gaussian Elimination:\n";
+	std::cout << "----------------------------\n";
+	Gauss(test2).print();
+
 	std::cout << "\n================================\n";
+
+	
+	
+
+
 
 	/*auto start = std::chrono::high_resolution_clock::now();
 	for (int i = 0; i < 1000000; i++)
@@ -155,9 +168,6 @@ int main() {
 	auto end = std::chrono::high_resolution_clock::now();
 
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
 	std::cout << "Execution time: " << duration.count() << " milliseconds" << std::endl*/;
+	
 }
-
-
-

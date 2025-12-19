@@ -238,11 +238,11 @@ public:
     }
 
     // A Function to check is an entire column is zeros 
-    static bool isZeroCol(vec Col) {
+    static bool isZeroCol(vec Col, int start) {
 
         bool IsZero = true;
 
-        for (int i = 0; i < Col.size(); i++) {
+        for (int i = start; i < Col.size(); i++) {
             if (Col[i] != 0) {
 
                 return IsZero = false;
@@ -261,7 +261,7 @@ public:
 
             vec MatrixCol = M.getCol(i);
 
-            if (isZeroCol(MatrixCol) == true) {
+            if (isZeroCol(MatrixCol, 0) == true) {
                 IsZero = true;
 
             }
