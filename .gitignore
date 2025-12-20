@@ -36,6 +36,8 @@
 *.exe
 *.out
 *.app
+*.vs
+*out
 
 # debug information files
 *.dwo

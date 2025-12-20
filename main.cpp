@@ -1,182 +1,165 @@
 #include "matrix.h"
-#include <stdexcept>
-#include <tuple>
+#include <chrono>
 
 
 // the reverted commit 
 using namespace std;
 
-vec addRow(vec r1, vec r2) {
-  if (r1.size() != r2.size()) {
-    throw invalid_argument("NOT EQUAL ROWS");
-  }
-  vec Result;
-  for (unsigned int i = 0; i < r1.size(); i++) {
-    Result.push_back(r1[i] + r2[i]);
-  }
+	auto it = std::find_if(Col.begin() + PivotPos, Col.end(), [](int i) { return i != 0; });
+	int index = std::distance(Col.begin(), it);
 
-  return Result;
+	return index;
 }
 
-vec subtRow(vec r1, vec r2) {
-  if (r1.size() != r2.size()) {
-    throw invalid_argument("NOT EQUAL ROWS");
-  }
-  vec Result;
-  for (unsigned int i = 0; i < r1.size(); i++) {
+static Matrix Gauss(Matrix ArgumentMatrix) {
 
-    Result.push_back(r1[i] - r2[i]);
-  }
-  return Result;
-}
+	int MatrixColumnSize = ArgumentMatrix.columnsize;
 
-vec rowConstantMul(vec r1, double constant) {
-  vec Result{};
-  for (unsigned int i = 0; i < r1.size(); i++) {
-    Result.push_back(r1[i] * constant);
-  }
 
-  return Result;
-}
+	for (int i = 0; i < ArgumentMatrix.columnsize - 1; i++) {
 
-vec RowByRowMul(vec r1, vec r2) {
-  vec Result{};
-  for (unsigned int i = 0; i < r1.size(); i++) {
-    Result.push_back(r1[i] * r2[i]);
-  }
+		int PivotRowNum = i;
+		int PivotColumnNum = i;
+		double Pivot = ArgumentMatrix.matrix[PivotRowNum][PivotColumnNum];
+		int MatrixRowSize = ArgumentMatrix.rowsize - 1;
 
-  return Result;
-}
+		vec PivotColumn = ArgumentMatrix.getCol(PivotColumnNum);
+		auto it = std::find_if(PivotColumn.begin(), PivotColumn.end(), [Pivot](double i) { return i == Pivot; });
+		int PivotPos = std::distance(PivotColumn.begin(), it);
 
 
 
-Matrix zeroing(Matrix M, int pivotRowNumber, int pivotColNumber,
-               int workingrowDistance) {
+		vec PivotRow = ArgumentMatrix.getRow(PivotPos);
 
-  if (pivotRowNumber + workingrowDistance >= M.rowsize)
-    return M;
-  double workingN =
-      M.matrix[pivotRowNumber + workingrowDistance][pivotColNumber];
-  double PIVOT = M.matrix[pivotRowNumber][pivotColNumber];
-	if(PIVOT == 0){
-		// swap rows 
-		vec temp = M.matrix[pivotRowNumber+1];
-		M.matrix[pivotRowNumber + 1] = M.matrix[pivotRowNumber];
-		M.matrix[pivotRowNumber] = temp;
-		zeroing(M,pivotRowNumber,pivotColNumber,workingrowDistance);
+		// 2
+		for (int j = 0; j < ArgumentMatrix.rowsize - 1 - PivotPos; j++) {
+
+			if (Matrix::isZeroCol(ArgumentMatrix.getCol(i))) {
+				// Go RIGHT
+				if (PivotColumnNum < MatrixColumnSize - 2) {
+
+					PivotColumnNum += 1;
+					PivotPos += 1;
+
+				}
+				else {
+					std::cout << "This System has no solutions!";
+				}
+
+			}
+			else {
+
+
+				if (Pivot == 0) {
+
+					int RowUnderPivotIndex = FirstNonZeroInCol(ArgumentMatrix.getCol(PivotColumnNum), PivotPos);
+					vec temp = ArgumentMatrix.matrix[RowUnderPivotIndex];
+					ArgumentMatrix.matrix[RowUnderPivotIndex] = ArgumentMatrix.matrix[PivotPos];
+					ArgumentMatrix.matrix[PivotPos] = temp;
+
+					return Gauss(ArgumentMatrix);
+
+
+
+				}
+				else {
+
+					if (MatrixRowSize != 0 && PivotRow != ArgumentMatrix.getRow(ArgumentMatrix.rowsize - 1)) {
+
+						vec RowUnderPivot = ArgumentMatrix.getRow(MatrixRowSize);
+						double Multipiler = RowUnderPivot[PivotPos] / Pivot;
+						vec SubtractorRow = Matrix::rowConstantMul(PivotRow, Multipiler);
+						vec FinalRow = Matrix::subtRow(RowUnderPivot, SubtractorRow);
+						ArgumentMatrix.matrix[MatrixRowSize] = FinalRow;
+						MatrixRowSize--;
+
+						//ArgumentMatrix.print(); std::cout << '\n';
+
+
+					}
+
+
+
+				}
+
+
+
+			}
+		}
+
+
 	}
-  if (workingN != 0) {
-    vec pivotRow = M.getRow(pivotRowNumber);
-    vec workingRow = M.getRow(pivotRowNumber + workingrowDistance);
-    vec tempPivot = rowConstantMul(pivotRow, ((workingN * -1) / PIVOT));
-    vec result = addRow(tempPivot, workingRow);
-
-    M.matrix[pivotRowNumber + workingrowDistance] = result;
-  }
-
-  return zeroing(M, pivotRowNumber, pivotColNumber, workingrowDistance + 1);
+	return ArgumentMatrix;
 }
 
-bool isZeroRow(vec row) { // [1 2 3 | 4]
-  for (double x : row) {
-    if (x != 0)
-      return 0;
-  }
-  return 1;
-}
 
-double gauss(Matrix M) {
-  Matrix tempM = Matrix(M.matrix, M.Dimension);
-	int pivotRowNumber = 0;
-	int pivotColNumber = 0;
-	double PIVOT = M.matrix[pivotRowNumber][pivotColNumber];
-	if(PIVOT == 0){
-		// swap rows 
-		vec temp = M.matrix[pivotRowNumber+1];
-		M.matrix[pivotRowNumber + 1] = M.matrix[pivotRowNumber];
-		M.matrix[pivotRowNumber] = temp;
-		return gauss(M);
-	}
- 
-  for (int i = 0; i <= M.rowsize; i++) {
-    tempM = zeroing(M, i /*PIVOT ROW NUMBER*/, i,
-                    /*PIVOT COLUMN NUMBER*/ 1); // first pivot done
-    while (M.matrix != tempM.matrix) { // would only equal each other if we
-                                       // finished that specific Pivot
-      M = tempM;
-      tempM = zeroing(M, i, i, 1); // first pivot done
-    }
-  }
 
-  M.print();
-  std::cout << '\n';
-  vec temp = M.getRow(M.rowsize - 1);
-  temp.pop_back();
-
-  if (isZeroRow(M.getRow(M.rowsize - 1))) {
-    std::cout << "THIS SYSTEM HAS INFENITLY MANY SOLUTIONS";
-    std::cout << '\n';
-  } else if (isZeroRow(temp) && (M.getRow(M.rowsize - 1).back() != 0)) {
-    std::cout << "THIS SYSTEM HAS NO SOLUTIONS";
-    std::cout << '\n';
-
-  } else {
-    // this has unique SOLUTIONS
-    vec lastRow = M.getRow(M.rowsize - 1);      // last euation
-    double resR3 = lastRow[lastRow.size() - 1]; // result is last element;
-    double zR3 = lastRow[lastRow.size() - 2];   // Z value in the last equation;
-    double Z = resR3 / zR3;
-    std::cout << "\nZ:" << Z;
-    vec YRow = M.getRow(M.rowsize - 2);
-    double ZR2 = YRow[YRow.size() - 2] * Z;
-
-    double resR2 = YRow[YRow.size() - 1];
-    double Y;
-    double X;
-    if (ZR2 > 0) {
-      Y = (resR2 - ZR2) / YRow[YRow.size() - 3];
-      std::cout << "\nY:" << Y << "\n";
-    } else {
-      Y = (resR2 + ZR2) / YRow[YRow.size() - 3];
-      std::cout << "\nY:" << Y << "\n";
-    }
-
-    vec XRow = M.getRow(M.rowsize - 3);
-    double ZR1 = XRow[XRow.size() - 2] * Z;
-    double YR1 = XRow[XRow.size() - 3] * Y;
-    double YZ = ZR1 + YR1;
-    double resR1 = XRow[XRow.size() - 1];
-
-    if (YZ > 0) {
-      X = (resR1 - YZ) / XRow[XRow.size() - 4];
-      std::cout << "X:" << X << "\n";
-
-    } else {
-      X = (resR1 + YZ) / XRow[XRow.size() - 4];
-      std::cout << "X:" << X << "\n";
-    }
-  }
-
-  return 0.0;
-};
 
 int main() {
-  Matrix InfManyproblem = Matrix({{1, 3, 1, 9},
-                                  {1, 1, -1, 1},
-                                  {3, 11, 5, 35},
-                                  {
-                                      1,
-                                      1,
-                                      -1,
-                                      1,
-                                  }},
-                                 std::make_tuple(3, 4));
-  Matrix NoSolProblem = Matrix({{1, 2, 3}, {2, 4, 7}}, std::make_tuple(2, 3));
-  Matrix UniqueSolProblem = Matrix({{1, 2, 3, 14}, {0, 1, 2, 8}, {0, 0, 1, 3}},
-                                   std::make_tuple(3, 4));
-  Matrix zeroPivotProblem= Matrix({{0,2,1,5},{1,-1,3,4},{2,1,1,6}}, std::make_tuple(3, 4));
-  //gauss(InfManyproblem);
-  //gauss(NoSolProblem);
-  //gauss(UniqueSolProblem);
-  gauss(zeroPivotProblem);
+
+	Matrix InfManyproblem = Matrix({ {1, 3, 1, 9},
+								  {1, 1, -1, 1},
+								  {3, 11, 5, 35},
+								  {1, 1, -1, 1} },
+		std::make_tuple(4, 4));
+
+	Matrix NoSolProblem = Matrix({ {1, 2, 3}, {2, 4, 7} }, std::make_tuple(2, 3));
+
+	Matrix UniqueSolProblem = Matrix({ {1, 2, 3, 14}, {0, 1, 2, 8}, {0, 0, 1, 3} },
+		std::make_tuple(3, 4));
+
+	Matrix zeroPivotProblem = Matrix({ {0, 2, 1, 5}, {1, -1, 3, 4}, {2, 1, 1, 6} },
+		std::make_tuple(3, 4));
+
+	Matrix zeroSecondPivot = Matrix(
+		{ {2, 3, 4, 8, 10}, {0, 0, 1, 1, 20}, {0, 5, 6, 9, 30}, {0, 2, 7, 3, 40} },
+		std::make_tuple(4, 5));
+
+	Matrix test = Matrix({ {2,5,2,-38},{3,-2,4,17},{-6,1,-7,-12} }, std::make_tuple(3, 4));
+	std::cout << "\n================================\n";
+
+	std::cout << "Test Case 1: Infinite Solutions\n";
+	std::cout << "================================\n";
+	InfManyproblem.print();
+	std::cout << "\nAfter Gaussian Elimination:\n";
+	std::cout << "----------------------------\n";
+	Gauss(InfManyproblem).print();
+
+	std::cout << "\n\n================================\n";
+	std::cout << "Test Case 2: No Solution\n";
+	std::cout << "================================\n";
+	NoSolProblem.print();
+	std::cout << "\nAfter Gaussian Elimination:\n";
+	std::cout << "----------------------------\n";
+	Gauss(NoSolProblem).print();
+
+	std::cout << "\n\n================================\n";
+	std::cout << "Test Case 3: Unique Solution\n";
+	std::cout << "================================\n";
+	UniqueSolProblem.print();
+	std::cout << "\nAfter Gaussian Elimination:\n";
+	std::cout << "----------------------------\n";
+	Gauss(UniqueSolProblem).print();
+
+	std::cout << "\n\n================================\n";
+	std::cout << "Test Case 4: Zero Pivot\n";
+	std::cout << "================================\n";
+	zeroPivotProblem.print();
+	std::cout << "\nAfter Gaussian Elimination:\n";
+	std::cout << "----------------------------\n";
+	Gauss(zeroPivotProblem).print();
+
+	std::cout << "\n================================\n";
+
+	/*auto start = std::chrono::high_resolution_clock::now();
+	for (int i = 0; i < 1000000; i++)
+		Gauss(zeroPivotProblem);
+	auto end = std::chrono::high_resolution_clock::now();
+
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+	std::cout << "Execution time: " << duration.count() << " milliseconds" << std::endl*/;
 }
+
+
+
