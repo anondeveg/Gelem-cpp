@@ -238,7 +238,7 @@ public:
     }
 
     // A Function to check is an entire column is zeros 
-    static bool isZeroCol(vec Col, int start) {
+    static bool isZeroCol(const vec& Col, int start) {
 
         bool IsZero = true;
 
