@@ -27,7 +27,7 @@ static Matrix Gauss(Matrix ArgumentMatrix) {
 	vec PivotRow = ArgumentMatrix.getRow(PivotPos); // returns the row of the pivot
 
 
-	if (PivotColumnNum != ArgumentMatrix.columnsize - 2) {
+	if (PivotColumnNum != ArgumentMatrix.columnsize - 1) {
 		if (Matrix::isZeroCol(ArgumentMatrix.getCol(PivotColumnNum), PivotPos)) {
 
 			if (PivotColumnNum < MatrixColumnSize - 2) {
@@ -38,6 +38,8 @@ static Matrix Gauss(Matrix ArgumentMatrix) {
 			}
 
 		}
+
+
 		if (Pivot == 0 && Matrix::isZeroCol(ArgumentMatrix.getCol(PivotColumnNum), PivotPos) == false) {
 
 			int RowUnderPivotIndex = FirstNonZeroInCol(ArgumentMatrix.getCol(PivotColumnNum), PivotPos);
@@ -50,7 +52,8 @@ static Matrix Gauss(Matrix ArgumentMatrix) {
 
 
 		}
-		else {
+		
+		if (abs(Pivot) > 0) {
 
 			for (int i = 0; i < ArgumentMatrix.rowsize - 1 - PivotPos; i++) {
 
@@ -75,6 +78,8 @@ static Matrix Gauss(Matrix ArgumentMatrix) {
 			}
 
 		}
+		
+		
 	}
 	else {
 		return ArgumentMatrix;
@@ -114,16 +119,16 @@ int main() {
 	Matrix test3 = Matrix({ {0, 2, 3, 4},{0, 4, 5, 10},{0, 6, 7, 14} }, std::make_tuple(3, 4));
 	//Gauss(test3);
 
-	std::cout << "\n================================\n";
+	/*std::cout << "\n================================\n";
 
 	std::cout << "Test Case 1: Infinite Solutions\n";
 	std::cout << "================================\n";
 	InfManyproblem.print();
 	std::cout << "\nAfter Gaussian Elimination:\n";
 	std::cout << "----------------------------\n";
-	Gauss(InfManyproblem).print();
+	Gauss(InfManyproblem).print();*/
 
-	std::cout << "\n\n================================\n";
+	/*std::cout << "\n\n================================\n";
 	std::cout << "Test Case 2: No Solution\n";
 	std::cout << "================================\n";
 	NoSolProblem.print();
@@ -145,7 +150,7 @@ int main() {
 	zeroPivotProblem.print();
 	std::cout << "\nAfter Gaussian Elimination:\n";
 	std::cout << "----------------------------\n";
-	Gauss(zeroPivotProblem).print();
+	Gauss(zeroPivotProblem).print();*/
 
 	std::cout << "\n\n================================\n";
 	std::cout << "Test Case 5: Moving Right\n";
