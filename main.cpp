@@ -1,4 +1,5 @@
 #include "matrix.h"
+#include <sys/types.h>
 #include <tuple>
 
 bool ISVERBOSE = false;
@@ -98,11 +99,14 @@ Result gauss(Matrix M) {
 
   } else {
     // this has unique SOLUTIONS
-		// temporary handeling
-		Result res;
-		res.SOL = UNIQUESOL;
-		return res;
- }
+    // temporary handeling
+		// need to do some research on back-subsitution
+    double var_value;
+    M.print();
+    Result result;
+    result.SOL = UNIQUESOL;
+		return  result;
+   	} 
 
   return Result();
 }
@@ -131,10 +135,10 @@ int main(int argc, char *argv[]) {
     if (cmd == "-v")
       ISVERBOSE = true;
   }
-  std::cout << gauss(movingRightProblem).SOL;
+  gauss(UniqueSolProblem);
   // std::cout << gauss(InfManyproblem).SOL;
   // std::cout << gauss(NoSolProblem).SOL;
 
   // gauss(zeroPivotProblem);
-	return 0;
+  return 0;
 }
