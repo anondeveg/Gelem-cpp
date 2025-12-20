@@ -47,6 +47,16 @@ public:
                 }
             }
         }
+      }
+    }
+  }
+
+  static Matrix dot(Matrix m1, Matrix m2) {
+    if (m1.columnsize != m2.rowsize) { // m1.col != m2.rowj
+      throw std::invalid_argument(
+          "INVALID OPERATION UNEQUAL DIMENSIONS! Matrix of columnsize " +
+          std::to_string(m1.columnsize) + " and Matrix of rowsize of " +
+          std::to_string(m2.rowsize));
     }
 
 
@@ -61,21 +71,18 @@ public:
 
         Matrix matrixProduct({}, std::make_tuple(m1.rowsize, m2.columnsize));
 
-        for (int i = 0; i < m1.columnsize /*2*/; i++) {
-            vec m1_row = m1.getRow(i);
-            for (int j = 0; j < m2.columnsize /*3*/; j++) {
-                vec m2_col = m2.getCol(j);
+    for (int i = 0; i < m1.columnsize /*2*/; i++) {
+      vec m1_row = m1.getRow(i);
+      for (int j = 0; j < m2.columnsize /*3*/; j++) {
+        vec m2_col = m2.getCol(j);
 
-                double sum{};
-                for (unsigned int k = 0; k < m2_col.size(); k++) {
+        double sum{};
+        for (unsigned int k = 0; k < m2_col.size(); k++) {
 
-                    sum += (m1_row[k] * m2_col[k]);
-                }
-                matrixProduct.matrix[i][j] = sum;
-            }
+          sum += (m1_row[k] * m2_col[k]);
         }
-
-        return matrixProduct;
+        matrixProduct.matrix[i][j] = sum;
+      }
     }
 
 
@@ -90,6 +97,22 @@ public:
         }
         return res;
     }
+    return res;
+  }
+
+  void print() {
+    for (int i = 0; i < rowsize; i++) {
+
+      std::cout << "\n";
+      std::cout << "(";
+      for (int j = 0; j < columnsize; j++) {
+        std::cout << matrix[i][j];
+        j != columnsize - 1 ? std::cout << "\t" : std::cout << "";
+      }
+      std::cout << ")";
+    }
+  }
+  static Matrix Constmultiplication(Matrix TargetedMat, int k) {
 
 
     // Function that prints a matrix
@@ -112,19 +135,26 @@ public:
 
         Matrix Result({}, std::make_tuple(TargetedMat.rowsize, TargetedMat.columnsize));
 
+      for (int j = 0; j < TargetedMat.columnsize; j++) {
 
-        for (int i = 0; i < TargetedMat.rowsize; i++) {
-
-            for (int j = 0; j < TargetedMat.columnsize; j++) {
-
-                Result.matrix[i][j] = TargetedMat.matrix[i][j] * k;
-            }
-        }
-
-        return Result;
-
+        Result.matrix[i][j] = TargetedMat.matrix[i][j] * k;
+      }
     }
 
+    return Result;
+  }
+
+  static Matrix AddMatrix(Matrix Mat1, Matrix Mat2) {
+
+    if (Mat1.Dimension != Mat2.Dimension) {
+      /*throw std::invalid_argument(
+          "INVALID OPERATION UNEQUAL DIMENSIONS!");*/           // Dont know why doesn't it work
+
+      std::cout << "INVALID OPERATION UNEQUAL DIMENSIONS!";
+    }
+
+    else {
+      Matrix Result({}, std::make_tuple(Mat1.rowsize, Mat1.columnsize));
 
     // A Function that Adds 2 matrices together
     static Matrix AddMatrix(Matrix Mat1, Matrix Mat2) {
@@ -134,20 +164,18 @@ public:
                 "INVALID OPERATION UNEQUAL DIMENSIONS! Matrix addition operation "
                 "should have = dimensions");
         }
+      }
 
         else {
             Matrix Result({}, std::make_tuple(Mat1.rowsize, Mat1.columnsize));
 
             for (int i = 0; i < Mat1.rowsize; i++) {
 
-                for (int j = 0; j < Mat1.columnsize; j++) {
+  static Matrix SubtractMatix(Matrix Mat1, Matrix Mat2) {
 
-                    Result.matrix[i][j] = Mat1.matrix[i][j] + Mat2.matrix[i][j];
-                }
-            }
+    if (Mat1.Dimension != Mat2.Dimension) {
 
-            return Result;
-        }
+      std::cout << "INVALID OPERATION UNEQUAL DIMENSIONS!";
     }
 
 
@@ -161,17 +189,32 @@ public:
                 "should have = dimensions");
 
         }
+      }
 
-        else {
-            Matrix Result({}, std::make_tuple(Mat1.rowsize, Mat1.columnsize));
+      return Result;
+    }
+  }
+  vec addRow(vec r1, vec r2) {
+    if (r1.size() != r2.size()) {
+      throw std::invalid_argument("NOT EQUAL ROWS");
+    }
+    vec Result;
+    for (unsigned int i = 0; i < r1.size(); i++) {
+      Result.push_back(r1[i] + r2[i]);
+    }
 
             for (int i = 0; i < Mat1.rowsize; i++) {
 
-                for (int j = 0; j < Mat1.columnsize; j++) {
+      Result.push_back(r1[i] - r2[i]);
+    }
+    return Result;
+  }
 
-                    Result.matrix[i][j] = Mat1.matrix[i][j] - Mat2.matrix[i][j];
-                }
-            }
+  vec rowConstantMul(vec r1, double constant) {
+    vec Result{};
+    for (unsigned int i = 0; i < r1.size(); i++) {
+      Result.push_back(r1[i] * constant);
+    }
 
             return Result;
         }
@@ -268,4 +311,7 @@ public:
         }
         return IsZero;
     }
+
+    return Result;
+  }
 };
