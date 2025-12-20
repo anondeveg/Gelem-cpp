@@ -192,4 +192,23 @@ public:
 
     return Result;
   }
+  bool isZeroRow(vec row) { // [1 2 3 | 4]
+    for (double x : row) {
+      if (x != 0)
+        return 0;
+    }
+    return 1;
+  }
+  static bool isZeroCol(vec Col, int start=0) {
+
+    bool IsZero = true;
+
+    for (unsigned int i = start; i < Col.size(); i++) {
+      if (Col[i] != 0) {
+
+        return IsZero = false;
+      }
+    }
+    return IsZero;
+  }
 };
