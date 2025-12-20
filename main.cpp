@@ -1,7 +1,5 @@
 #include "matrix.h"
-#include <sys/types.h>
 #include <tuple>
-
 bool ISVERBOSE = false;
 using namespace std;
 enum ResType {
@@ -14,7 +12,7 @@ struct Result {
   ResType SOL;
   std::vector<double> Solutions = {};
 };
-Matrix rowEchlonForm(Matrix M, int pivotRowNumber, int pivotColNumber,
+Matrix rowEchlonForm(Matrix& M, int pivotRowNumber, int pivotColNumber,
                      int workingrowDistance) {
 
   if (pivotRowNumber + workingrowDistance >= M.rowsize)
@@ -50,7 +48,7 @@ bool isZeroRow(vec row) { // [1 2 3 | 4]
   return 1;
 }
 
-Result gauss(Matrix M) {
+Result gauss(Matrix& M) {
   Matrix tempM = Matrix(M.matrix, M.Dimension);
   int pivotRowNumber = 0;
   int pivotColNumber = 0;
@@ -100,13 +98,12 @@ Result gauss(Matrix M) {
   } else {
     // this has unique SOLUTIONS
     // temporary handeling
-		// need to do some research on back-subsitution
-    double var_value;
-    M.print();
+    // need to do some research on back-subsitution
+    // double var_value;
     Result result;
     result.SOL = UNIQUESOL;
-		return  result;
-   	} 
+    return result;
+  }
 
   return Result();
 }
@@ -135,10 +132,8 @@ int main(int argc, char *argv[]) {
     if (cmd == "-v")
       ISVERBOSE = true;
   }
-  gauss(UniqueSolProblem);
-  // std::cout << gauss(InfManyproblem).SOL;
-  // std::cout << gauss(NoSolProblem).SOL;
 
-  // gauss(zeroPivotProblem);
+  for (int i = 0; i < 1000000; i++)
+    gauss(movingRightProblem);
   return 0;
 }

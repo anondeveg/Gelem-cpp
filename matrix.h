@@ -3,7 +3,6 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include <tuple>
 #include <vector>
 
 using Dim = std::tuple<int, int>;
@@ -36,7 +35,7 @@ public:
         matrix.push_back({});
 
         for (int j = 0; j < columnsize; j++) {
-          matrix[i].push_back(0);
+          matrix[i].emplace_back(0);
         }
       }
     }
@@ -73,7 +72,7 @@ public:
   vec getCol(int n) {
     vec res;
     for (int i = 0; i < rowsize; i++) {
-      res.push_back(this->matrix[i][n]);
+      res.emplace_back(this->matrix[i][n]);
     }
     return res;
   }
@@ -90,7 +89,7 @@ public:
       std::cout << ")";
     }
   }
-  static Matrix Constmultiplication(Matrix TargetedMat, int k) {
+  static Matrix Constmultiplication(const Matrix &TargetedMat, int k) {
 
     Matrix Result({},
                   std::make_tuple(TargetedMat.rowsize, TargetedMat.columnsize));
@@ -106,8 +105,9 @@ public:
     return Result;
   }
 
-  static Matrix AddMatrix(Matrix Mat1, Matrix Mat2) {
+  static Matrix AddMatrix(const Matrix &Mat1, const Matrix &Mat2) {
 
+    Matrix Result({}, std::make_tuple(Mat1.rowsize, Mat1.columnsize));
     if (Mat1.Dimension != Mat2.Dimension) {
       /*throw std::invalid_argument(
           "INVALID OPERATION UNEQUAL DIMENSIONS!");*/           // Dont know why doesn't it work
@@ -116,7 +116,6 @@ public:
     }
 
     else {
-      Matrix Result({}, std::make_tuple(Mat1.rowsize, Mat1.columnsize));
 
       for (int i = 0; i < Mat1.rowsize; i++) {
 
@@ -128,17 +127,19 @@ public:
 
       return Result;
     }
+
+    return Result;
   }
 
-  static Matrix SubtractMatix(Matrix Mat1, Matrix Mat2) {
+  static Matrix SubtractMatix(const Matrix &Mat1, const Matrix &Mat2) {
 
+    Matrix Result({}, std::make_tuple(Mat1.rowsize, Mat1.columnsize));
     if (Mat1.Dimension != Mat2.Dimension) {
 
       std::cout << "INVALID OPERATION UNEQUAL DIMENSIONS!";
     }
 
     else {
-      Matrix Result({}, std::make_tuple(Mat1.rowsize, Mat1.columnsize));
 
       for (int i = 0; i < Mat1.rowsize; i++) {
 
@@ -150,6 +151,8 @@ public:
 
       return Result;
     }
+
+    return Result;
   }
   vec addRow(vec r1, vec r2) {
     if (r1.size() != r2.size()) {
@@ -157,49 +160,49 @@ public:
     }
     vec Result;
     for (unsigned int i = 0; i < r1.size(); i++) {
-      Result.push_back(r1[i] + r2[i]);
+      Result.emplace_back(r1[i] + r2[i]);
     }
 
     return Result;
   }
 
-  vec subtRow(vec r1, vec r2) {
+  vec subtRow(const vec& r1, const vec& r2) {
     if (r1.size() != r2.size()) {
       throw std::invalid_argument("NOT EQUAL ROWS");
     }
     vec Result;
     for (unsigned int i = 0; i < r1.size(); i++) {
 
-      Result.push_back(r1[i] - r2[i]);
+      Result.emplace_back(r1[i] - r2[i]);
     }
     return Result;
   }
 
-  vec rowConstantMul(vec r1, double constant) {
+  vec rowConstantMul(const vec& r1, double constant) {
     vec Result{};
     for (unsigned int i = 0; i < r1.size(); i++) {
-      Result.push_back(r1[i] * constant);
+      Result.emplace_back(r1[i] * constant);
     }
 
     return Result;
   }
 
-  vec RowByRowMul(vec r1, vec r2) {
+  vec RowByRowMul(const vec& r1, const vec& r2) {
     vec Result{};
     for (unsigned int i = 0; i < r1.size(); i++) {
-      Result.push_back(r1[i] * r2[i]);
+      Result.emplace_back(r1[i] * r2[i]);
     }
 
     return Result;
   }
-  bool isZeroRow(vec row) { // [1 2 3 | 4]
+  bool isZeroRow(const vec& row) { // [1 2 3 | 4]
     for (double x : row) {
       if (x != 0)
         return 0;
     }
     return 1;
   }
-  static bool isZeroCol(vec Col, int start=0) {
+  static bool isZeroCol(const vec& Col, int start = 0) {
 
     bool IsZero = true;
 
