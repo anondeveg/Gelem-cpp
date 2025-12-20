@@ -12,7 +12,7 @@ static int FirstNonZeroInCol(vec Col, int PivotPos) {
 int PivotRowNum = 0;
 int PivotColumnNum = 0;
 
-static Matrix Gauss(Matrix ArgumentMatrix) {
+Matrix RowEchlon(Matrix& ArgumentMatrix, int PivotColumnNum, int PivotRowNum) {
 
 	int MatrixColumnSize = ArgumentMatrix.columnsize; // "Not Zero Indexed"
 	int MatrixRowSize = ArgumentMatrix.rowsize; // "Not Zero Indexed"
@@ -34,7 +34,7 @@ static Matrix Gauss(Matrix ArgumentMatrix) {
 
 				PivotColumnNum += 1;
 
-				return Gauss(ArgumentMatrix);
+				return RowEchlon(ArgumentMatrix, PivotColumnNum, PivotRowNum);
 			}
 
 		}
@@ -47,7 +47,7 @@ static Matrix Gauss(Matrix ArgumentMatrix) {
 			ArgumentMatrix.matrix[RowUnderPivotIndex] = ArgumentMatrix.matrix[PivotPos];
 			ArgumentMatrix.matrix[PivotPos] = temp;
 			ArgumentMatrix.print(); std::cout << '\n';
-			return Gauss(ArgumentMatrix);
+			return RowEchlon(ArgumentMatrix, PivotColumnNum, PivotRowNum);
 
 
 
@@ -71,7 +71,7 @@ static Matrix Gauss(Matrix ArgumentMatrix) {
 
 				PivotRowNum++;
 				PivotColumnNum++;
-				Gauss(ArgumentMatrix);
+				RowEchlon(ArgumentMatrix, PivotColumnNum, PivotRowNum);
 			}
 			else {
 				return ArgumentMatrix;
@@ -81,11 +81,9 @@ static Matrix Gauss(Matrix ArgumentMatrix) {
 		
 		
 	}
-	else {
-		return ArgumentMatrix;
-	}
 	
-
+	
+	return ArgumentMatrix;
 
 	
 
@@ -119,22 +117,22 @@ int main() {
 	Matrix test3 = Matrix({ {0, 2, 3, 4},{0, 4, 5, 10},{0, 6, 7, 14} }, std::make_tuple(3, 4));
 	//Gauss(test3);
 
-	/*std::cout << "\n================================\n";
+	std::cout << "\n================================\n";
 
 	std::cout << "Test Case 1: Infinite Solutions\n";
 	std::cout << "================================\n";
 	InfManyproblem.print();
 	std::cout << "\nAfter Gaussian Elimination:\n";
 	std::cout << "----------------------------\n";
-	Gauss(InfManyproblem).print();*/
+	RowEchlon(InfManyproblem, PivotColumnNum, PivotRowNum).print();
 
-	/*std::cout << "\n\n================================\n";
+	std::cout << "\n\n================================\n";
 	std::cout << "Test Case 2: No Solution\n";
 	std::cout << "================================\n";
 	NoSolProblem.print();
 	std::cout << "\nAfter Gaussian Elimination:\n";
 	std::cout << "----------------------------\n";
-	Gauss(NoSolProblem).print();
+	RowEchlon(NoSolProblem, PivotColumnNum, PivotRowNum).print();
 
 	std::cout << "\n\n================================\n";
 	std::cout << "Test Case 3: Unique Solution\n";
@@ -142,7 +140,7 @@ int main() {
 	UniqueSolProblem.print();
 	std::cout << "\nAfter Gaussian Elimination:\n";
 	std::cout << "----------------------------\n";
-	Gauss(UniqueSolProblem).print();
+	RowEchlon(UniqueSolProblem, PivotColumnNum, PivotRowNum).print();
 
 	std::cout << "\n\n================================\n";
 	std::cout << "Test Case 4: Zero Pivot\n";
@@ -150,7 +148,7 @@ int main() {
 	zeroPivotProblem.print();
 	std::cout << "\nAfter Gaussian Elimination:\n";
 	std::cout << "----------------------------\n";
-	Gauss(zeroPivotProblem).print();*/
+	RowEchlon(InfManyproblem, PivotColumnNum, PivotRowNum).print();
 
 	std::cout << "\n\n================================\n";
 	std::cout << "Test Case 5: Moving Right\n";
@@ -158,7 +156,7 @@ int main() {
 	test2.print();
 	std::cout << "\nAfter Gaussian Elimination:\n";
 	std::cout << "----------------------------\n";
-	Gauss(test2).print();
+	RowEchlon(test2, PivotColumnNum, PivotRowNum).print();
 
 	std::cout << "\n================================\n";
 
