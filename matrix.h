@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <random>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -32,9 +33,9 @@ class Matrix {
             int matrixRowSize = mat.size();
             int matrixColSize = mat[0].size();
             this->Dimension = std::make_tuple(matrixRowSize, matrixColSize);
-        }else{
-					this->Dimension = dim;
-				}
+        } else {
+            this->Dimension = dim;
+        }
         this->rowsize = std::get<0>(Dimension);
         this->columnsize = std::get<1>(Dimension);
 
@@ -210,5 +211,27 @@ class Matrix {
             }
         }
         return IsZero;
+    }
+
+    static Matrix
+    generateRandomMatrix(Dim dim = std::make_tuple(0, 0), int min = 0, int max = 1000) {
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_int_distribution<std::mt19937::result_type> dist(min, max);
+        Mat mat;
+        if (std::get<0>(dim) == 0 && std::get<1>(dim) == 0) {
+            dim = std::make_tuple(dist(rng), dist(rng));
+        }
+
+        int rowSize = std::get<0>(dim);
+        int colSize = std::get<1>(dim);
+        mat.resize(rowSize);
+        for (int i = 0; i < std::get<0>(dim); i++) {
+            mat[i].resize(colSize);
+            for (int j = 0; j < std::get<1>(dim); j++) {
+                mat[i][j] = static_cast<int>(dist(rng));
+            }
+        }
+        return mat;
     }
 };
