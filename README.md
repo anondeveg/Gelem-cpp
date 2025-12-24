@@ -7,6 +7,12 @@ Gelem c++ is an emplementation for the [Gaussian elemenation algorithm](https://
 ```bash
 git clone https://github.com/anondeveg/Gelem-c-
 ```
+TODO:
+- implement a better printing function for matrices.  (DONE)
+- implement a way to print the values of XYZW... for unique matrices.
+
+
+
 
 ### rules
 

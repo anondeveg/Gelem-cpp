@@ -1,8 +1,8 @@
 #include "matrix.h"
 #include <chrono>
-#include <algorithm>
 
-int PivotCount = 0;
+
+
 
 static int FirstNonZeroInCol(const vec& Col, int PivotPos)
 {
@@ -78,18 +78,33 @@ Matrix RowEchlon(Matrix& ArgumentMatrix, int PivotColumnNum, int PivotRowNum)
 void Solution(Matrix RowEchlonMat)
 {
 
-	//----------------Finding if the matrix has a bad pivot---------------
+	//---------------- Cleaning really small numbers -------------------
+
+	for (int i = 0; i < RowEchlonMat.rowsize; i++) {
+
+		for (int j = 0; j < RowEchlonMat.columnsize; j++) {
+
+			if (std::abs(RowEchlonMat.matrix[i][j]) < 1e-9) {
+
+				RowEchlonMat.matrix[i][j] = 0.0;
+			}
+		}
+	}
+
+
+	//--------------- Finding if the matrix has a bad pivot --------------
 
 	bool HasBadPivot = false;
 
-	for (int i = 0; i < RowEchlonMat.rowsize - 1; i++)
+	for (int i = 0; i < RowEchlonMat.rowsize; i++)
 	{
 		bool IsZero = true;
 		for (int j = 0; j < RowEchlonMat.columnsize - 1; j++)
 		{
-			if (RowEchlonMat.matrix[i][j] > 1e-9)
+			if (std::abs(RowEchlonMat.matrix[i][j]) > 1e-9)
 			{
 				IsZero = false;
+				break;
 			}
 		}
 
@@ -101,20 +116,23 @@ void Solution(Matrix RowEchlonMat)
 	}
 
 
+
+	// ------------------------------------------ Finding the Solution ---------------------------------------------
+
 	if (HasBadPivot == true)
 	{
 
-		std::cout << "THIS SYSTEM HAS NO SOLUTIONS!";
+		std::cout << '\n' << '\n' << "THIS SYSTEM HAS NO SOLUTIONS!";
 
 	}
 	else
 	{
 		int VariableCount = RowEchlonMat.columnsize - 1;
 		int PivotCount = 0;
-		vec Pivots(RowEchlonMat.columnsize - 1);
+		vec Pivots(RowEchlonMat.rowsize);
 
 
-		//-----------------------Finding and Counting Pivots------------------------------
+		//----------------------- Finding and Counting Pivots ------------------------------
 
 		for (int i = 0; i < RowEchlonMat.rowsize; i++)
 		{
@@ -122,34 +140,28 @@ void Solution(Matrix RowEchlonMat)
 			{
 				if (std::abs(RowEchlonMat.matrix[i][j]) > 1e-9)
 				{
-					if (j == RowEchlonMat.columnsize - 1)
-					{
-						PivotCount++;
-						break;
-					}
-					else
-					{
-						PivotCount++;
-						Pivots[i] = RowEchlonMat.matrix[i][j];
-						break;
-					}
-
+					PivotCount++;
+					Pivots[i] = RowEchlonMat.matrix[i][j];
+					break;
 				}
+
 			}
 		}
+
 
 
 
 		if (PivotCount == VariableCount)
 		{
 
+			//--------------------- Back Substitution ------------------------
 
 			vec VariableValues(RowEchlonMat.columnsize - 1);
 
 
-			for (int i = RowEchlonMat.rowsize - 1; i >= 0; i--)
+			for (int i = VariableCount - 1; i >= 0; i--)
 			{
-				int RowSum = RowEchlonMat.matrix[i][RowEchlonMat.columnsize - 1];
+				double RowSum = RowEchlonMat.matrix[i][RowEchlonMat.columnsize - 1];
 
 				for (int j = i + 1; j < RowEchlonMat.columnsize - 1; j++)
 				{
@@ -157,22 +169,27 @@ void Solution(Matrix RowEchlonMat)
 					RowSum -= RowEchlonMat.matrix[i][j] * VariableValues[j];
 				}
 
-				if (Pivots[RowEchlonMat.columnsize - 1 - i] > 1e-9)
-				{
-
-				}
-
 				VariableValues[i] = RowSum / Pivots[i];
 
 
 			}
 
-			std::cout << "THIS SYSTEM HAS UNIQUE SOLUTIONS!";
+
+			//-------------------- Printing the Solution -------------------------
+
+			std::cout << '\n' << "THIS SYSTEM HAS UNIQUE SOLUTIONS!" << '\n';
+
+			for (int i = 0; i < VariableValues.size(); i++)
+			{
+				std::cout << "X" << i + 1 << ": " << VariableValues[i] << "|" << '\t';
+
+			}
+
 
 		}
 		else if (PivotCount < VariableCount)
 		{
-			std::cout << "THIS SYSTEM HAS INFINITE SOLUTIONS!";
+			std::cout << '\n' << '\n' << "THIS SYSTEM HAS INFINITE SOLUTIONS!";
 
 		}
 	}
@@ -183,7 +200,7 @@ void Solution(Matrix RowEchlonMat)
 int main()
 {
 
-	// -----------------------------------------------------------------TEST MATRICES--------------------------------------------------------------
+	// ----------------------------------------------------------------- TEST MATRICES --------------------------------------------------------------
 
 	Matrix zeroSecondPivot = Matrix({ {2, 3, 4, 8, 10}, {0, 0, 1, 1, 20}, {0, 5, 6, 9, 30}, {0, 2, 7, 3, 40} }, std::make_tuple(4, 5));
 
@@ -202,23 +219,23 @@ int main()
 	Matrix test3 = Matrix({ {0, 2, 3, 4},{0, 4, 5, 10},{0, 6, 7, 14} }, std::make_tuple(3, 4));
 
 	Matrix test4 = Matrix({
-		{45, 78, 23, 91, 12, 67, 34, 89, 56, 21, 43, },
-		{23, 56, 89, 12, 45, 78, 34, 67, 90, 21, 54, },
-		{67, 34, 92, 15, 58, 81, 29, 72, 45, 98, 26, },
-		{89, 42, 15, 68, 31, 94, 47, 20, 73, 36, 99, },
-		{12, 75, 48, 91, 34, 77, 50, 93, 36, 79, 52, },
-		{34, 87, 50, 13, 66, 29, 82, 45, 98, 61, 24, },
-		{56, 19, 72, 35, 88, 51, 14, 67, 30, 83, 46, },
-		{78, 41, 94, 57, 20, 73, 46, 99, 62, 25, 88, },
-		{90, 63, 36, 99, 72, 45, 18, 81, 54, 27, 90, },
-		{22, 85, 58, 31, 94, 67, 40, 13, 86, 59, 32, },
-		},
-		std::make_tuple(10, 11));
+	{3, 5, 2, 1, 4, 6, 2, 8, 1, 9, 45},
+	{2, 3, 1, 7, 5, 2, 8, 3, 1, 4, 30},
+	{1, 9, 4, 2, 3, 5, 7, 6, 2, 1, 25},
+	{5, 2, 6, 3, 1, 4, 2, 9, 5, 7, 40},
+	{4, 1, 7, 5, 2, 8, 3, 6, 9, 2, 50},
+	{6, 8, 3, 1, 9, 2, 5, 4, 7, 3, 35},
+	{2, 5, 1, 8, 6, 3, 4, 9, 2, 1, 20},
+	{9, 4, 2, 6, 3, 1, 8, 5, 7, 2, 55},
+	{3, 7, 5, 2, 1, 9, 6, 4, 8, 3, 42},
+	{8, 2, 9, 4, 5, 3, 1, 7, 6, 2, 48}
+		}, std::make_tuple(10, 11));
 
 
 	auto start = std::chrono::high_resolution_clock::now();
 
-	// ----------------------------------------------PRINTING TEST MATRICES BEFOUR AND AFTER RowEchlon Function--------------------------------------
+
+	// ---------------------------------------------- PRINTING TEST MATRICES BEFOUR AND AFTER RowEchlon Function --------------------------------------
 
 		/*std::cout << "\n================================\n";
 
@@ -240,11 +257,14 @@ int main()
 	std::cout << "\n\n================================\n";
 	std::cout << "Test Case 3: Unique Solution\n";
 	std::cout << "================================\n";
-	test3.print();
-	std::cout << "\nAfter Gaussian Elimination:\n";
+	UniqueSolProblem.print();
+	std::cout << "\n" << "\n" << "After Gaussian Elimination :" << " \n";
 	std::cout << "----------------------------\n";
-	RowEchlon(test3, 0, 0).print();
-	//Solution(RowEchlon(test4, 0, 0));
+	RowEchlon(UniqueSolProblem, 0, 0).print();
+	std::cout << "\n" << "\n" << "After Solving :" << " \n";
+	std::cout << "----------------------------\n";
+
+	Solution(RowEchlon(UniqueSolProblem, 0, 0));
 
 	std::cout << "\n\n================================\n";
 	/*std::cout << "Test Case 4: Zero Pivot\n";
@@ -268,13 +288,7 @@ int main()
 
 
 
-//--------------------------MEASURING TIME OF EXCUTION----------------------------------
-
-	/*auto start = std::chrono::high_resolution_clock::now();
-		for (int i = 0; i < 1000000; i++)
-			RowEchlon(test2, 0, 0);
-	auto end = std::chrono::high_resolution_clock::now();*/
-
+//-------------------------- MEASURING TIME OF EXCUTION ----------------------------------
 
 	auto end = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
