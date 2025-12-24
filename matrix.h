@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <random>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -24,6 +25,23 @@ template <typename T> void printContainer(const std::vector<T>& vec) {
 
 
 class Matrix {
+  public:
+    Dim Dimension;
+    Mat matrix;
+    double rowsize = 0;
+    double columnsize = 0;
+
+    Matrix(Mat mat, Dim dim = std::make_tuple(0, 0)) {
+        this->matrix = mat;
+        if (std::get<0>(dim) == 0 && std::get<1>(dim) == 0) {
+            int matrixRowSize = mat.size();
+            int matrixColSize = mat[0].size();
+            this->Dimension = std::make_tuple(matrixRowSize, matrixColSize);
+        } else {
+            this->Dimension = dim;
+        }
+        this->rowsize = std::get<0>(Dimension);
+        this->columnsize = std::get<1>(Dimension);
 
 public:
     Dim Dimension;
